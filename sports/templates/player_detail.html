@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="player-card" style="
+    background:white; 
+    padding:30px; 
+    border-radius:12px; 
+    box-shadow:0 4px 12px rgba(0,0,0,0.1); 
+    max-width:400px; 
+    margin:40px auto; 
+    text-align:center;
+">
+    <h2 style="color:#dc3545; margin-bottom:15px;">Player: {{ player.name }}</h2>
+
+    <p style="font-size:1.1rem; margin-bottom:10px;"><strong>Status:</strong> 
+        <span style="color: {% if player.status == 'In' %}green{% else %}red{% endif %}; font-weight:bold;">
+            {{ player.status }}
+        </span>
+    </p>
+
+    {% if player.qr_code %}
+        <img src="{{ player.qr_code.url }}" width="200" style="margin:20px 0; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1);" alt="QR Code">
+    {% else %}
+        <p style="color:#888; margin:20px 0;">No QR code available</p>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" style="
+            background:#dc3545; 
+            color:white; 
+            padding:12px 25px; 
+            border:none; 
+            border-radius:8px; 
+            font-size:1rem; 
+            cursor:pointer; 
+            transition:0.3s;
+        "
+        onmouseover="this.style.background='#b02a37'" onmouseout="this.style.background='#dc3545'">
+            {% if player.status == 'Out' %}Mark In{% else %}Mark Out{% endif %}
+        </button>
+    </form>
+</div>
+{% endblock %}

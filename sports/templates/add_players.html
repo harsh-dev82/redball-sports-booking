@@ -1,0 +1,9 @@
+<h2>Add Players for {{ booking.sport.name }}</h2>
+<form method="POST">
+  {% csrf_token %}
+  <div id="players">
+    <input type="text" name="name" placeholder="Player Name">
+    <input type="email" name="email" placeholder="Player Email">
+  </div>
+  <button type="submit">Add Players</button>
+</form>

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Available Sports</h1>
+{% for sport in sports %}
+<div class="card">
+    <h2>{{ sport.name }}</h2>
+    <p>Price: ₹{{ sport.price_per_hour }}</p>
+    <a href="{% url 'book_sport' sport.id %}">Book Now</a>
+</div>
+{% endfor %}
+{% endblock %}
