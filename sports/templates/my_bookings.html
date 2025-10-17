@@ -1,23 +1,48 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<h2 style="color:#dc3545; margin-bottom: 20px;">My Bookings</h2>
 
-{% if bookings %}
-<div class="bookings-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:20px;">
+<div style="max-width:900px; margin:30px auto; padding:20px;">
+  <h2 style="text-align:center; color:#dc3545;">🎾 My Bookings</h2>
+
+  {% if bookings %}
     {% for booking in bookings %}
-    <div class="card">
-        <h3>{{ booking.sport.name }}</h3>
-        <p><strong>Date:</strong> {{ booking.date }}</p>
-        <p><strong>Time:</strong> {{ booking.start_time }} - {{ booking.end_time }}</p>
-        <p><strong>Total Price:</strong> ₹{{ booking.total_price }}</p>
-        <p><strong>Status:</strong> {{ booking.status }}</p>
-        <a href="{% url 'add_players' booking.id %}" style="display:inline-block; margin-top:10px;">Add Players</a>
+    <div style="background:white; border-radius:12px; padding:20px; margin:20px 0; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+      
+      <h3 style="color:#333;">{{ booking.sport.name }} — {{ booking.date }}</h3>
+      <p><strong>Time:</strong> {{ booking.start_time }} - {{ booking.end_time }}</p>
+      <p><strong>Total Price:</strong> ₹{{ booking.total_price }}</p>
+      <p><strong>Status:</strong> 
+        <span style="color:green; font-weight:bold;">{{ booking.status }}</span>
+      </p>
+      <p><strong>Players:</strong> {{ booking.player_count }}</p>
+
+      {% if booking.player_count > 0 %}
+        <ul style="list-style:none; padding-left:0;">
+          {% for player in booking.players %}
+            <li style="margin-bottom:6px;">
+              👤 <strong>{{ player.name }}</strong> — {{ player.email }}
+              <a href="{% url 'player_detail' player.id %}" 
+                 style="margin-left:10px; color:#dc3545; text-decoration:none; font-weight:bold;">
+                 View
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p style="color:#888;">No players added yet.</p>
+      {% endif %}
+
+      <div style="margin-top:15px;">
+        <a href="{% url 'add_players' booking.id %}" 
+           style="background:#dc3545; color:white; padding:8px 16px; border-radius:6px; text-decoration:none; margin-right:10px;">
+          ➕ Add Players
+        </a>
+      </div>
     </div>
     {% endfor %}
+  {% else %}
+    <p style="text-align:center; color:#888;">No bookings found yet.</p>
+  {% endif %}
 </div>
-{% else %}
-<p style="font-size:1.1rem; color:#555;">You have no bookings yet. <a href="{% url 'home' %}" style="color:#dc3545;">Book a sport now!</a></p>
-{% endif %}
 
 {% endblock %}

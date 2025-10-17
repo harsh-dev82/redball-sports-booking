@@ -1,44 +1,156 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<div class="player-card" style="
-    background:white; 
-    padding:30px; 
-    border-radius:12px; 
-    box-shadow:0 4px 12px rgba(0,0,0,0.1); 
-    max-width:400px; 
-    margin:40px auto; 
-    text-align:center;
-">
-    <h2 style="color:#dc3545; margin-bottom:15px;">Player: {{ player.name }}</h2>
+<style>
+/* Main container */
+.player-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 85vh;
+    background: linear-gradient(135deg, #ffe5e5, #ffffff);
+}
 
-    <p style="font-size:1.1rem; margin-bottom:10px;"><strong>Status:</strong> 
-        <span style="color: {% if player.status == 'In' %}green{% else %}red{% endif %}; font-weight:bold;">
+/* Player Card */
+.player-card {
+    background: #fff;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    text-align: center;
+    width: 90%;
+    max-width: 420px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+.player-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(15px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+
+/* Player Heading */
+.player-card h2 {
+    color: #dc3545;
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+/* Status Text */
+.player-card p {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.status {
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.status.in {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status.out {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* QR Image */
+.qr-img {
+    width: 200px;
+    margin: 25px auto;
+    border-radius: 10px;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease;
+}
+
+.qr-img:hover {
+    transform: scale(1.05);
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin: 5px;
+}
+
+.btn-toggle {
+    background: #dc3545;
+    color: white;
+    box-shadow: 0 4px 10px rgba(220,53,69,0.3);
+}
+
+.btn-toggle:hover {
+    background: #b02a37;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(220,53,69,0.4);
+}
+
+.btn-qr {
+    background: #28a745;
+    color: white;
+    box-shadow: 0 4px 10px rgba(40,167,69,0.3);
+}
+
+.btn-qr:hover {
+    background: #1e7e34;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(40,167,69,0.4);
+}
+
+/* Info text */
+.info-text {
+    font-size: 0.9rem;
+    color: #777;
+    margin-top: 10px;
+}
+</style>
+
+<div class="player-container">
+  <div class="player-card">
+    <h2>{{ player.name }}</h2>
+    <p><strong>Status:</strong> 
+        <span class="status {% if player.status == 'In' %}in{% else %}out{% endif %}">
             {{ player.status }}
         </span>
     </p>
+    <p><strong>Booking:</strong> {{ player.booking.sport.name }} ({{ player.booking.date }})</p>
 
-    {% if player.qr_code %}
-        <img src="{{ player.qr_code.url }}" width="200" style="margin:20px 0; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1);" alt="QR Code">
+    {% if qr_image_base64 %}
+        <img src="data:image/png;base64,{{ qr_image_base64 }}" class="qr-img" alt="QR Code">
+        <p class="info-text">📱 Scan this QR code to toggle player status (In/Out).</p>
     {% else %}
-        <p style="color:#888; margin:20px 0;">No QR code available</p>
+        <p style="color:#888;">No QR code available</p>
     {% endif %}
 
     <form method="POST">
         {% csrf_token %}
-        <button type="submit" style="
-            background:#dc3545; 
-            color:white; 
-            padding:12px 25px; 
-            border:none; 
-            border-radius:8px; 
-            font-size:1rem; 
-            cursor:pointer; 
-            transition:0.3s;
-        "
-        onmouseover="this.style.background='#b02a37'" onmouseout="this.style.background='#dc3545'">
+        <button type="submit" class="btn btn-toggle">
             {% if player.status == 'Out' %}Mark In{% else %}Mark Out{% endif %}
         </button>
     </form>
+
+    {% comment %} <a href="{% url 'player_qr_toggle' player.id %}" class="btn btn-qr">
+        Simulate QR Scan
+    </a> {% endcomment %}
+  </div>
 </div>
 {% endblock %}

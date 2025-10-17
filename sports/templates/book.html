@@ -1,8 +1,97 @@
-<h2>Book {{ sport.name }}</h2>
-<form method="POST">
-  {% csrf_token %}
-  <label>Date:</label><input type="date" name="date" required><br>
-  <label>Start Time:</label><input type="time" name="start_time" required><br>
-  <label>End Time:</label><input type="time" name="end_time" required><br>
-  <button type="submit">Book</button>
-</form>
+{% extends 'base.html' %}
+{% block content %}
+<style>
+/* Booking Form Container */
+.booking-container {
+    max-width: 500px;
+    margin: 60px auto;
+    background: #fff;
+    padding: 35px;
+    border-radius: 15px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    text-align: center;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(10px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+
+/* Heading */
+.booking-container h2 {
+    color: #dc3545;
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+/* Form Fields */
+.booking-container form {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.booking-container label {
+    font-weight: 500;
+    text-align: left;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+.booking-container input[type="date"],
+.booking-container input[type="time"] {
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.booking-container input[type="date"]:focus,
+.booking-container input[type="time"]:focus {
+    border-color: #dc3545;
+    outline: none;
+    box-shadow: 0 0 5px rgba(220,53,69,0.3);
+}
+
+/* Button */
+.booking-container button {
+    padding: 12px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.booking-container button:hover {
+    background: #b02a37;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(220,53,69,0.3);
+}
+</style>
+
+<div class="booking-container">
+  <h2>Book {{ sport.name }}</h2>
+  <form method="POST">
+    {% csrf_token %}
+    <label>Date:</label>
+    <input type="date" name="date" required>
+
+    <label>Start Time:</label>
+    <input type="time" name="start_time" required>
+
+    <label>End Time:</label>
+    <input type="time" name="end_time" required>
+
+    <button type="submit">Book Now</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,8 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.urls import reverse, NoReverseMatch
 import qrcode
 from io import BytesIO
 from django.core.files import File
+import base64
 
 # --- Sport Model ---
 class Sport(models.Model):
@@ -34,6 +36,14 @@ class Booking(models.Model):
     def __str__(self):
         return f"{self.sport.name} - {self.date}"
 
+    @property
+    def total_players(self):
+        return self.player_set.count()
+
+    @property
+    def players_in(self):
+        return self.player_set.filter(status='In').count()
+
 
 # --- Player Model ---
 class Player(models.Model):
@@ -41,17 +51,38 @@ class Player(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
     status = models.CharField(max_length=10, default='Out')  # In / Out
-    qr_code = models.ImageField(upload_to='qrcodes/', blank=True)
+    qr_code = models.ImageField(upload_to='qrcodes/', blank=True, null=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.status})"
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        data = f"Player: {self.name}, BookingID: {self.booking.id}"
+    # ✅ Safe QR URL (won't break if URL not loaded)
+    def get_qr_url(self):
+        try:
+            return reverse('toggle_player_status', args=[self.id])
+        except NoReverseMatch:
+            return None
+
+    # ✅ Generate QR code as ImageField (call manually)
+    def generate_qr_code(self):
+        qr_url = self.get_qr_url() or '#'
+        data = f"Scan to mark {self.name} ({self.status}) -> {qr_url}"
         qr_img = qrcode.make(data)
         buffer = BytesIO()
         qr_img.save(buffer, format='PNG')
         file_name = f'qr_{self.id}.png'
         self.qr_code.save(file_name, File(buffer), save=False)
-        super().save(update_fields=['qr_code'])
+
+    # ✅ Save method does NOT call generate_qr_code automatically
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+    # Optional: generate base64 QR for templates without saving file
+    def get_qr_code_base64(self, request=None):
+        qr_url = self.get_qr_url() or '#'
+        if request:
+            qr_url = request.build_absolute_uri(qr_url)
+        qr_img = qrcode.make(f"Scan to mark {self.name} ({self.status}) -> {qr_url}")
+        buffer = BytesIO()
+        qr_img.save(buffer, format='PNG')
+        return base64.b64encode(buffer.getvalue()).decode('utf-8')

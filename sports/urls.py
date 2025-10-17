@@ -23,4 +23,10 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(
         next_page='home'
     ), name='logout'),
+    path('player/<int:player_id>/', views.player_detail, name='player_detail'),
+    # path('player/<int:player_id>/qr/', views.player_qr_toggle, name='toggle_player_status')
+    # path('player/<int:player_id>/toggle/', views.player_qr_toggle, name='toggle_player_status'),
+
+
+
 ]
