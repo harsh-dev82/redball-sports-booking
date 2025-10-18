@@ -48,6 +48,7 @@ class Booking(models.Model):
 # --- Player Model ---
 class Player(models.Model):
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=100)
     email = models.EmailField()
     status = models.CharField(max_length=10, default='Out')  # In / Out
@@ -73,9 +74,29 @@ class Player(models.Model):
         file_name = f'qr_{self.id}.png'
         self.qr_code.save(file_name, File(buffer), save=False)
 
-    # ✅ Save method does NOT call generate_qr_code automatically
+    # ✅ Override save() to create a user automatically
     def save(self, *args, **kwargs):
+        creating = self._state.adding  # check if player is newly created
         super().save(*args, **kwargs)
+
+        # Create a corresponding Django User only when a new player is added
+        if creating and not self.user:
+            username = self.name.strip()
+            base_username = username
+            counter = 1
+
+            # Avoid duplicate usernames
+            while User.objects.filter(username=username).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
+
+            new_user = User.objects.create_user(
+                username=username,
+                email=self.email,
+                password="redball"
+            )
+            self.user = new_user
+            super().save(update_fields=['user'])
 
     # Optional: generate base64 QR for templates without saving file
     def get_qr_code_base64(self, request=None):

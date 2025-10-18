@@ -1,27 +1,28 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from datetime import datetime
 from .models import Sport, Booking, Player
 from .forms import SignUpForm
-import base64
 
 # 🏠 Home Page
 def home(request):
     sports = Sport.objects.all()
     return render(request, 'home.html', {'sports': sports})
 
+
 # 🏏 Book a Sport
 @login_required
 def book_sport(request, sport_id):
     sport = get_object_or_404(Sport, id=sport_id)
+
     if request.method == 'POST':
         date = request.POST['date']
         start_time = request.POST['start_time']
         end_time = request.POST['end_time']
 
+        # Check if slot already booked
         existing = Booking.objects.filter(
             sport=sport,
             date=date,
@@ -51,6 +52,7 @@ def book_sport(request, sport_id):
 
     return render(request, 'book.html', {'sport': sport})
 
+
 # 📅 My Bookings
 @login_required
 def my_bookings(request):
@@ -60,26 +62,33 @@ def my_bookings(request):
         booking.players = Player.objects.filter(booking=booking)
     return render(request, 'my_bookings.html', {'bookings': bookings})
 
+
 # 🧑‍🤝‍🧑 Add Players Page
 @login_required
 def add_players(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+
     if request.method == 'POST':
         names = request.POST.getlist('name')
         emails = request.POST.getlist('email')
+
         added_count = 0
         for n, e in zip(names, emails):
             if n.strip() and e.strip():
-                user, created = User.objects.get_or_create(username=e, email=e)
-                if created:
-                    user.set_password('redball')
-                    user.save()
-                Player.objects.create(booking=booking, name=n, email=e, status='Out')
+                # ✅ Player model will automatically create User
+                Player.objects.create(
+                    booking=booking,
+                    name=n.strip(),
+                    email=e.strip(),
+                    status='Out'
+                )
                 added_count += 1
+
         messages.success(request, f"{added_count} players added successfully!")
         return redirect('my_bookings')
 
     return render(request, 'add_players.html', {'booking': booking})
+
 
 # 📲 Player Details (Shows QR Code + Manual Toggle)
 @login_required
@@ -100,14 +109,15 @@ def player_detail(request, player_id):
         'qr_image_base64': qr_image_base64
     })
 
+
 # 🔄 QR Code Scan Toggle (Automatic In/Out)
-# @login_required
-# def player_qr_toggle(request, player_id):
-#     player = get_object_or_404(Player, id=player_id)
-#     player.status = 'In' if player.status == 'Out' else 'Out'
-#     player.save()
-#     messages.success(request, f"{player.name} marked as {player.status} via QR scan!")
-#     return redirect('player_detail', player_id=player.id)
+def player_qr_toggle(request, player_id):
+    player = get_object_or_404(Player, id=player_id)
+    player.status = 'In' if player.status == 'Out' else 'Out'
+    player.save()
+    messages.success(request, f"{player.name} marked as {player.status} via QR scan!")
+    return redirect('player_detail', player_id=player.id)
+
 
 # 🧾 Signup Page
 def signup_view(request):
@@ -123,6 +133,7 @@ def signup_view(request):
     else:
         form = SignUpForm()
     return render(request, 'signup.html', {'form': form})
+
 
 # 🚪 Logout
 def logout_view(request):
